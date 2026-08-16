@@ -437,7 +437,7 @@ export default async function Home() {
             <div style={{
               padding: '100px 40px',
               textAlign: 'center',
-              background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%)',
+              background: 'linear-gradient(180deg, rgba(255, 252, 246, 0.4) 0%, rgba(255, 252, 246, 0.9) 100%)',
               border: '1px solid rgba(var(--c-main), 0.2)',
               borderRadius: '32px',
               boxShadow: '0 0 100px rgba(var(--c-main), 0.1), inset 0 0 40px rgba(var(--c-main), 0.05)',
@@ -473,10 +473,10 @@ export default async function Home() {
                 opacity: 0.5
               }} />
               
-              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '3.5rem', color: '#f8fafc', marginBottom: '24px', position: 'relative', zIndex: 1, letterSpacing: '-0.02em', textShadow: '0 0 40px rgba(var(--c-main),0.4)' }}>
+              <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '3.5rem', color: '#1c1915', marginBottom: '24px', position: 'relative', zIndex: 1, letterSpacing: '-0.02em', textShadow: '0 0 40px rgba(var(--c-main),0.2)' }}>
                 Building the Future
               </h3>
-              <p style={{ color: 'rgba(255,255,255,0.7)', maxWidth: '500px', margin: '0 auto', fontSize: '1.2rem', lineHeight: 1.7, position: 'relative', zIndex: 1, fontWeight: 300 }}>
+              <p style={{ color: 'rgba(40,34,26,0.7)', maxWidth: '500px', margin: '0 auto', fontSize: '1.2rem', lineHeight: 1.7, position: 'relative', zIndex: 1, fontWeight: 300 }}>
                 The next generation of leaders for the Executive Committee is currently being selected. A new era is about to begin.
               </p>
               

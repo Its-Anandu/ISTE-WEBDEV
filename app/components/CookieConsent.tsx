@@ -119,7 +119,7 @@ export default function CookieConsent() {
             padding: '0.5rem 1.5rem',
             borderRadius: '0.5rem',
             border: 'none',
-            background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
+            background: 'linear-gradient(135deg, #d6603a, #e09e3e)',
             color: '#fff',
             fontSize: '0.8125rem',
             fontFamily: 'var(--font-sans, sans-serif)',

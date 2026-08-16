@@ -1,66 +1,41 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
+// @ts-ignore — plain JS runtime script (no sibling type declarations)
+import { runSyncInternships } from '../../../scripts/sync_internships.mjs';
+
+export const dynamic = 'force-dynamic';
+export const maxDuration = 300;
 
 /**
  * ==========================================
- * ELITE INTERNSHIP AGENT ARCHITECTURE (v3)
+ * ELITE INTERNSHIP SYNC AGENT (serverless)
  * ==========================================
- * This route delegates the heavy lifting to the FastAPI/Celery backend.
- * It strictly acts as a trigger point.
+ * Runs the Node sync engine in-process: discovery -> strict internship-only
+ * filter -> scam check -> live-link verification -> Sanity write (dedupe).
+ * Scheduled by vercel.json cron (3x / day). No Python/FastAPI backend needed.
  */
 
 export async function GET(req: Request) {
+  const auth = req.headers.get('authorization');
+  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  const started = Date.now();
   try {
-    const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return new NextResponse('Unauthorized', { status: 401 });
-    }
+    const report = await runSyncInternships({ skipRevalidate: true, log: console.log });
 
-    console.log('[AI Gateway] Dispatching job to Central Engine...');
-    
-    // Dispatch to FastAPI backend
-    const fastApiUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
-    
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-      
-      const res = await fetch(`${fastApiUrl}/jobs/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.CRON_SECRET}`
-        },
-        body: JSON.stringify({ source: 'all' }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      
-      if (!res.ok) {
-        throw new Error(`Gateway responded with ${res.status}`);
-      }
-      
-      const data = await res.json();
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Job successfully dispatched to Celery Queue',
-        jobId: data.job_id,
-        sseStreamUrl: `${fastApiUrl}/jobs/${data.job_id}/events`
-      });
-      
-    } catch (e: any) {
-      console.error('[AI Gateway] Celery Backend Unreachable:', e.message);
-      
-      // Implement fallback logic here if needed, or simply fail gracefully
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Celery Backend Offline or Unreachable',
-        details: e.message 
-      }, { status: 503 });
-    }
+    // New/updated listings become visible instantly on both surfaces.
+    revalidatePath('/');
+    revalidatePath('/internships');
 
+    return NextResponse.json({
+      success: true,
+      elapsedMs: Date.now() - started,
+      report,
+    });
   } catch (error: any) {
-    console.error('[AI Gateway] Critical Dispatch Error:', error);
+    console.error('[Internship Sync] Failed:', error.message || error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

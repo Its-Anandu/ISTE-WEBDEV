@@ -17,20 +17,20 @@ export default function LiveEventBanner({ activeEvents }: { activeEvents: any[] 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 md:px-6 mt-8 md:mt-16 mb-8 md:mb-16 relative z-20">
       <div 
-        className="relative overflow-hidden backdrop-blur-2xl bg-white/[0.02] border border-white/10 rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-10 md:px-12 flex flex-col md:flex-row items-center justify-between gap-5 md:gap-8 transition-all hover:bg-white/[0.03]"
+        className="relative overflow-hidden backdrop-blur-2xl bg-[#fffdf9]/[0.75] border border-[#594c3c]/20 rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-10 md:px-12 flex flex-col md:flex-row items-center justify-between gap-5 md:gap-8 transition-all hover:bg-[#fffdf9]/[0.5]"
         style={{ 
-          boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)'
+          boxShadow: '0 20px 50px rgba(90,76,56,0.16), inset 0 1px 0 rgba(190,76,52,0.08)'
         }}
       >
         {/* Soft glow behind the text */}
         <div 
           className="absolute -left-20 top-1/2 -translate-y-1/2 w-48 h-48 blur-[100px] pointer-events-none"
-          style={{ background: 'rgba(var(--c-main), 0.15)' }}
+          style={{ background: 'rgba(var(--c-main), 0.12)' }}
         />
         
         <div className="flex items-center gap-4 md:gap-6 relative z-10 w-full md:w-auto">
           {/* Animated Status Dot */}
-          <div className="relative flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 shrink-0">
+          <div className="relative flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#594c3c]/5 shrink-0">
             <div 
               className="w-2.5 h-2.5 rounded-full animate-pulse" 
               style={{ 
@@ -47,7 +47,7 @@ export default function LiveEventBanner({ activeEvents }: { activeEvents: any[] 
             >
               {activeEvents[0].status === 'registration_active' ? 'Registration Live' : 'Coming Soon'}
             </h3>
-            <p className="text-white font-serif tracking-wide text-lg md:text-3xl leading-tight">
+            <p className="text-[#1c1915] font-serif tracking-wide text-lg md:text-3xl leading-tight">
               {activeEvents[0].title}
             </p>
           </div>
@@ -57,14 +57,15 @@ export default function LiveEventBanner({ activeEvents }: { activeEvents: any[] 
           href={`/events/${activeEvents[0].slug?.current || ''}`}
           className="relative z-10 w-full md:w-auto px-6 py-3 md:px-10 md:py-4 rounded-full font-sans text-[0.65rem] md:text-xs font-bold uppercase tracking-[0.1em] flex items-center justify-center gap-3 transition-all group"
           style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            color: '#fff'
+            background: 'rgba(40, 34, 26, 0.06)',
+            color: '#1c1915',
+            border: '1px solid rgba(40, 34, 26, 0.14)'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(var(--c-main), 0.15)'
+            e.currentTarget.style.background = 'rgba(var(--c-main), 0.12)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+            e.currentTarget.style.background = 'rgba(40, 34, 26, 0.06)'
           }}
         >
           {activeEvents[0].status === 'registration_active' ? 'Register Now' : 'View Details'}

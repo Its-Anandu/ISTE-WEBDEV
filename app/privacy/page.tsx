@@ -13,8 +13,8 @@ export default function PrivacyPage() {
     <main
       style={{
         minHeight: '100vh',
-        background: '#0a0a0c',
-        color: 'rgba(255,255,255,0.85)',
+        background: '#f6f2ea',
+        color: '#3a342c',
         fontFamily: 'var(--font-sans, sans-serif)',
         padding: '7rem 1.5rem 5rem',
       }}
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
         }}
       >
         <header style={{ marginBottom: '3rem' }}>
-          <p style={{ color: '#7c3aed', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
+          <p style={{ color: '#c66a3c', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
             Legal
           </p>
           <h1
@@ -36,14 +36,14 @@ export default function PrivacyPage() {
               fontWeight: 800,
               margin: '0 0 1rem',
               lineHeight: 1.15,
-              background: 'linear-gradient(135deg, #fff 40%, rgba(255,255,255,0.5))',
+              background: 'linear-gradient(135deg, #1c1915 40%, #6f685c)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
           >
             Privacy Policy
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem' }}>
+          <p style={{ color: 'rgba(58,52,44,0.55)', fontSize: '0.875rem' }}>
             Last updated: {updated}
           </p>
         </header>
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
         <Section title="1. Who We Are">
           <p>
             ISTE MBCET (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) is the official student chapter of the Indian Society for Technical Education at Mar Baselios College of Engineering and Technology, Trivandrum, Kerala, India. Our website is available at{' '}
-            <a href="https://iste-mbcet.vercel.app" style={{ color: '#7c3aed' }}>
+            <a href="https://iste-mbcet.vercel.app" style={{ color: '#c66a3c' }}>
               https://iste-mbcet.vercel.app
             </a>.
           </p>
@@ -124,7 +124,7 @@ export default function PrivacyPage() {
           </ul>
           <p>
             To exercise any of these rights, please contact us at{' '}
-            <a href="mailto:iste@mbcet.ac.in" style={{ color: '#7c3aed' }}>
+            <a href="mailto:iste@mbcet.ac.in" style={{ color: '#c66a3c' }}>
               iste@mbcet.ac.in
             </a>.
           </p>
@@ -145,11 +145,11 @@ export default function PrivacyPage() {
         <Section title="11. Contact Us">
           <p>
             For questions or concerns about this Privacy Policy, contact us at:{' '}
-            <a href="mailto:iste@mbcet.ac.in" style={{ color: '#7c3aed' }}>
+            <a href="mailto:iste@mbcet.ac.in" style={{ color: '#c66a3c' }}>
               iste@mbcet.ac.in
             </a>
           </p>
-          <address style={{ fontStyle: 'normal', marginTop: '0.5rem', color: 'rgba(255,255,255,0.5)' }}>
+          <address style={{ fontStyle: 'normal', marginTop: '0.5rem', color: 'rgba(58,52,44,0.6)' }}>
             ISTE Student Chapter<br />
             Mar Baselios College of Engineering and Technology<br />
             Nalanchira, Trivandrum — 695015<br />
@@ -168,13 +168,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
         style={{
           fontSize: '1.125rem',
           fontWeight: 700,
-          color: '#fff',
+          color: '#1c1915',
           marginBottom: '0.75rem',
         }}
       >
         {title}
       </h2>
-      <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.9375rem' }}>{children}</div>
+      <div style={{ color: 'rgba(58,52,44,0.75)', fontSize: '0.9375rem' }}>{children}</div>
     </section>
   );
 }

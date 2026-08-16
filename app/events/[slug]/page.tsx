@@ -136,7 +136,7 @@ export default async function EventPage({ params }: { params: { slug: string } }
               </>
             )}
             <span style={{ color: 'var(--g600)' }}>•</span>
-            <span style={{ color: event.status === 'upcoming' ? '#4f6ef7' : 'var(--g400)' }}>{event.status === 'upcoming' ? 'UPCOMING' : 'PAST EVENT'}</span>
+            <span style={{ color: event.status === 'upcoming' ? '#d6783e' : 'var(--g400)' }}>{event.status === 'upcoming' ? 'UPCOMING' : 'PAST EVENT'}</span>
           </div>
           {event.status === 'upcoming' && event.registrationLink && (
             <div className="reveal d2" style={{ marginTop: '32px' }}>

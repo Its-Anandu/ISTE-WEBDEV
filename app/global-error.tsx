@@ -16,7 +16,7 @@ export default function GlobalError({
 
   return (
     <html lang="en">
-      <body style={{ margin: 0, background: '#0a0a0c', color: '#f8fafc', fontFamily: 'sans-serif' }}>
+      <body style={{ margin: 0, background: '#f6f2ea', color: '#1c1915', fontFamily: 'sans-serif' }}>
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
           <div style={{
             maxWidth: '500px', width: '100%', textAlign: 'center',

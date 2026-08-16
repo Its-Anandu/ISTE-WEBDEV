@@ -12,6 +12,30 @@ export default function GLSLBackground() {
     brain.registerEngine('WebGL');
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Performance guard: don't run a full-screen WebGL shader continuously on
+    // low-end devices, touch screens, when the OS asks for reduced motion, or
+    // when the tab is hidden. This removes a major source of device lag.
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isTouch = window.matchMedia('(hover: none)').matches || 'ontouchstart' in window;
+    const weakDevice = (navigator.hardwareConcurrency || 8) <= 4;
+    if (reducedMotion || isTouch || weakDevice) {
+      // Paint one static, warm frame (no animation loop) to preserve the ambience.
+      const staticCanvas = canvas.getContext('2d');
+      if (staticCanvas) {
+        const g = staticCanvas.createRadialGradient(
+          canvas.width * 0.5, canvas.height * 0.1, 0,
+          canvas.width * 0.5, canvas.height * 0.4, Math.max(canvas.width, canvas.height) * 0.9
+        );
+        g.addColorStop(0, 'rgba(190, 76, 52, 0.10)');
+        g.addColorStop(0.5, 'rgba(246, 242, 234, 0.0)');
+        g.addColorStop(1, 'rgba(246, 242, 234, 0.0)');
+        staticCanvas.fillStyle = g;
+        staticCanvas.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      return;
+    }
+
     const gl = canvas.getContext('webgl');
     if (!gl) return;
 
@@ -80,10 +104,10 @@ export default function GLSLBackground() {
         n += noise(uv * 6.0 - u_time * 0.3) * 0.5;
         n += noise(uv * 12.0 + u_time * 0.1) * 0.25;
 
-        // Colors
-        vec3 color1 = vec3(0.05, 0.1, 0.2); // Dark blue background
-        vec3 color2 = vec3(0.2, 0.4, 0.8); // Lighter blue structure
-        vec3 highlight = vec3(0.5, 0.8, 1.0); // Mouse interaction highlight
+        // Colors — soft light editorial palette (terracotta / saffron / ink)
+        vec3 color1 = vec3(0.97, 0.95, 0.92); // warm paper base
+        vec3 color2 = vec3(0.88, 0.78, 0.68); // light terracotta structure
+        vec3 highlight = vec3(0.82, 0.55, 0.22); // saffron highlight
 
         vec3 finalColor = mix(color1, color2, n);
         finalColor += highlight * mouseGlow;
@@ -144,8 +168,13 @@ export default function GLSLBackground() {
     };
     window.addEventListener('mousemove', handleMouseMove);
 
-    // Render Loop
+    // Render Loop — throttled to ~30fps and paused when the tab is hidden to
+    // cut GPU/CPU/battery cost on devices.
     const render = (time: number) => {
+      if (document.hidden) return;
+      if (lastFrameTime && (time - lastFrameTime) < 33) return; // ~30fps cap
+      lastFrameTime = time;
+
       const displayWidth = window.innerWidth;
       const displayHeight = window.innerHeight;
       
@@ -165,6 +194,7 @@ export default function GLSLBackground() {
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     };
+    let lastFrameTime = 0;
     gsap.ticker.add(render);
 
     return () => {

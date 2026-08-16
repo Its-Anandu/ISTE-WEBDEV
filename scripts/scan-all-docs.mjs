@@ -1,12 +1,13 @@
-import { createClient } from '@sanity/client'
+import { createClient } from '@sanity/client';
+import 'dotenv/config';
 
 const client = createClient({
-  projectId: 'xz7jxi4a',
-  dataset: 'production',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
   apiVersion: '2024-01-01',
-  token: 'sksojErGM6LZQtIcqxhfVbWOaBRmZ9xXqRdOTNSEw9FrUJBn01L8uOGqG19Xgbi30I2vCLy673RcN7qoBoE9ks9FfHzpOi0I9diwHyRoNuz3lbyXkoDDikgMhpu17gZmVpc928rYVXKGg1DNVfykaL1WfsmiCr9QeyH4WY8fL5dlV2qDx0Eh',
+  token: process.env.SANITY_API_TOKEN,
   useCdn: false,
-})
+});
 
 async function checkAll() {
   const docs = await client.fetch('*')

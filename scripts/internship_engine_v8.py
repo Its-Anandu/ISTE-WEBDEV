@@ -169,6 +169,9 @@ class InternshipIntelligenceCore:
                     if phrase in content_lower:
                         return 20 # Expired
             return 100 # Healthy
+        except httpx.TransportError:
+            # Network blips are transient — don't flag healthy listings as dead.
+            return 60 # Neutral / unverifiable this run
         except:
             return 0
 

@@ -105,9 +105,9 @@ export default function InternshipGrid({ internships }: { internships: Internshi
             </div>
             <button 
               onClick={() => { setQuizState('active'); setQuizScore(0); setCurrentQuestion(0); }}
-              style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }}
-              onMouseOver={e => e.currentTarget.style.background = '#2563eb'}
-              onMouseOut={e => e.currentTarget.style.background = '#3b82f6'}
+              style={{ background: '#d6603a', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }}
+              onMouseOver={e => e.currentTarget.style.background = '#d6603a'}
+              onMouseOut={e => e.currentTarget.style.background = '#d6603a'}
             >
               Start Calibrating
             </button>
@@ -135,12 +135,12 @@ export default function InternshipGrid({ internships }: { internships: Internshi
                     }
                   }}
                   style={{
-                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(40,34,26,0.03)', border: '1px solid rgba(40,34,26,0.1)',
                     padding: '12px 16px', borderRadius: '8px', color: 'var(--g100)', textAlign: 'left',
                     cursor: 'pointer', transition: 'all 0.2s'
                   }}
-                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.5)'; }}
-                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(40,34,26,0.08)'; e.currentTarget.style.borderColor = 'rgba(190,76,52,0.5)'; }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'rgba(40,34,26,0.03)'; e.currentTarget.style.borderColor = 'rgba(40,34,26,0.1)'; }}
                 >
                   {opt}
                 </button>
@@ -188,8 +188,8 @@ export default function InternshipGrid({ internships }: { internships: Internshi
           style={{
             width: '100%',
             padding: '16px 20px 16px 48px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(40, 34, 26, 0.03)',
+            border: '1px solid rgba(40, 34, 26, 0.1)',
             borderRadius: '12px',
             color: '#f8fafc',
             fontSize: '1rem',
@@ -199,13 +199,13 @@ export default function InternshipGrid({ internships }: { internships: Internshi
             boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
           }}
           onFocus={(e) => {
-            e.target.style.borderColor = '#3b82f6'
-            e.target.style.background = 'rgba(255, 255, 255, 0.05)'
+            e.target.style.borderColor = '#d6603a'
+            e.target.style.background = 'rgba(40, 34, 26, 0.05)'
             e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.2)'
           }}
           onBlur={(e) => {
-            e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'
-            e.target.style.background = 'rgba(255, 255, 255, 0.03)'
+            e.target.style.borderColor = 'rgba(40, 34, 26, 0.1)'
+            e.target.style.background = 'rgba(40, 34, 26, 0.03)'
             e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.2)'
           }}
         />
@@ -217,8 +217,8 @@ export default function InternshipGrid({ internships }: { internships: Internshi
           display: 'flex',
           gap: '4px'
         }}>
-          <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)' }}>⌘</kbd>
-          <kbd style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)' }}>K</kbd>
+          <kbd style={{ background: 'rgba(40,34,26,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', color: '#94a3b8', border: '1px solid rgba(40,34,26,0.1)' }}>⌘</kbd>
+          <kbd style={{ background: 'rgba(40,34,26,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', color: '#94a3b8', border: '1px solid rgba(40,34,26,0.1)' }}>K</kbd>
         </div>
       </div>
 
@@ -281,7 +281,7 @@ export default function InternshipGrid({ internships }: { internships: Internshi
                 {intern.matchScore && (
                   <div style={{
                     position: 'absolute', top: '-10px', right: '-10px',
-                    background: intern.matchScore > 80 ? '#22c55e' : intern.matchScore > 50 ? '#f59e0b' : '#3b82f6',
+                    background: intern.matchScore > 80 ? '#22c55e' : intern.matchScore > 50 ? '#f59e0b' : '#d6603a',
                     color: '#fff', padding: '4px 12px', borderRadius: '12px',
                     fontSize: '0.8rem', fontWeight: 'bold', border: '2px solid var(--black)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.3)', zIndex: 10
@@ -345,14 +345,14 @@ export default function InternshipGrid({ internships }: { internships: Internshi
         .skeleton-card {
           position: relative;
           overflow: hidden;
-          background: rgba(255,255,255,0.02) !important;
-          border-color: rgba(255,255,255,0.05) !important;
+          background: rgba(40,34,26,0.02) !important;
+          border-color: rgba(40,34,26,0.05) !important;
         }
         .skeleton-card::after {
           content: '';
           position: absolute;
           top: 0; left: -100%; width: 50%; height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+          background: linear-gradient(90deg, transparent, rgba(40,34,26,0.04), transparent);
           animation: scan 1.5s infinite linear;
         }
         @keyframes scan {
@@ -360,13 +360,13 @@ export default function InternshipGrid({ internships }: { internships: Internshi
           100% { left: 200%; }
         }
         .skel-logo {
-          width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.05);
+          width: 48px; height: 48px; border-radius: 12px; background: rgba(40,34,26,0.05);
         }
         .skel-line {
-          height: 12px; border-radius: 6px; background: rgba(255,255,255,0.05);
+          height: 12px; border-radius: 6px; background: rgba(40,34,26,0.05);
         }
         .skel-tag {
-          width: 80px; height: 28px; border-radius: 14px; background: rgba(255,255,255,0.05);
+          width: 80px; height: 28px; border-radius: 14px; background: rgba(40,34,26,0.05);
         }
       `}</style>
     </div>

@@ -1,11 +1,22 @@
 import { createClient } from 'next-sanity';
 import https from 'https';
+import 'dotenv/config';
+
+// Security fix: NEVER hardcode a Sanity token in source. Read it from the environment.
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
+const token = process.env.SANITY_API_TOKEN;
+
+if (!projectId || !token) {
+  console.error('[fetch-internships] Missing Sanity env vars. Aborting without writing anything.');
+  process.exit(1);
+}
 
 const client = createClient({
-  projectId: 'xz7jxi4a',
-  dataset: 'production',
+  projectId,
+  dataset,
   apiVersion: '2024-01-01',
-  token: 'sksojErGM6LZQtIcqxhfVbWOaBRmZ9xXqRdOTNSEw9FrUJBn01L8uOGqG19Xgbi30I2vCLy673RcN7qoBoE9ks9FfHzpOi0I9diwHyRoNuz3lbyXkoDDikgMhpu17gZmVpc928rYVXKGg1DNVfykaL1WfsmiCr9QeyH4WY8fL5dlV2qDx0Eh', // from .env.local
+  token,
   useCdn: false,
 });
 
@@ -27,30 +38,36 @@ function fetchData(url) {
 
 async function run() {
   console.log('Fetching live internship data from public APIs...');
-  
-  // We fetch remote jobs and filter for those containing 'intern' or similar. 
-  // Remotive API is public and requires no auth: https://remotive.com/api/remote-jobs
+
+  // Remotive is a GLOBAL-REMOTE job API — it is NOT Kerala-specific. We must
+  // NOT mislabel remote/global roles as on-site Kerala opportunities, and we
+  // must NOT rename/rename arbitrary jobs to make them look like internships.
+  // Only emit roles that are genuinely internships AND genuinely remote-capable.
   const data = await fetchData('https://remotive.com/api/remote-jobs?category=software-dev&limit=50');
-  
-  const jobs = data.jobs || [];
-  const internships = jobs.filter(j => 
-    j.job_type.toLowerCase().includes('intern') || 
-    j.title.toLowerCase().includes('intern') ||
-    j.title.toLowerCase().includes('junior')
-  ).slice(0, 4); // Take up to 4
 
-  // If Remotive didn't return interns, fallback to first 4 jobs and label them as internships
-  const targets = internships.length > 0 ? internships : jobs.slice(0, 4);
+  const jobs = Array.isArray(data.jobs) ? data.jobs : [];
+  const internships = jobs
+    .filter((j) => {
+      const title = (j.title || '').toLowerCase();
+      return title.includes('intern');
+    })
+    .slice(0, 10);
 
-  console.log(`Found ${targets.length} real listings. Uploading to Sanity...`);
+  if (internships.length === 0) {
+    console.log('No genuine internship listings found. Writing nothing (no fabrication).');
+    return;
+  }
 
-  for (const job of targets) {
+  console.log(`Found ${internships.length} genuine internship listings. Uploading to Sanity...`);
+
+  for (const job of internships) {
     const doc = {
       _type: 'internship',
-      role: job.title.replace(/Junior/i, 'Intern'),
+      role: job.title,
       company: job.company_name,
       domain: 'Software Engineering',
-      type: 'Internship',
+      // Be honest: these are remote opportunities, not on-site Kerala roles.
+      type: 'Remote',
       stipend: job.salary || 'Competitive',
       duration: '3-6 Months',
       deadlineLabel: 'Apply ASAP',
@@ -60,14 +77,23 @@ async function run() {
       state: 'VERIFIED',
       verificationStatus: 'VERIFIED',
       linkHealthScore: 100,
-      featured: true,
-      qualityScore: 90,
+      featured: false,
+      qualityScore: 80,
     };
-    
+
+    const existing = await client.fetch('*[_type == "internship" && applyLink == $url][0]._id', { url: job.url });
+    if (existing) {
+      console.log(`= Already exists, skipping: ${job.title} at ${job.company_name}`);
+      continue;
+    }
+
     const res = await client.create(doc);
     console.log(`+ Uploaded: ${res.role} at ${res.company}`);
   }
   console.log('Done!');
 }
 
-run().catch(console.error);
+run().catch((e) => {
+  console.error('Fatal error:', e);
+  process.exit(1);
+});

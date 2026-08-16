@@ -50,7 +50,6 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
   // Live SSE telemetry connection
   useEffect(() => {
     const es = new EventSource('/api/telemetry/stream')
-    setIsLive(false)
 
     es.onopen = () => setIsLive(true)
 
@@ -85,7 +84,6 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
 
     let width = canvas.width = canvas.offsetWidth
     let height = canvas.height = canvas.offsetHeight
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const particles: any[] = []
 
     for (let i = 0; i < 40; i++) {
@@ -263,7 +261,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
                   </div>
                 ))}
                 <div className="analytics-footer">
-                  <span>Total verified internships: <strong style={{ color: '#60a5fa' }}>{internships.length}</strong></span>
+                  <span>Total verified internships: <strong style={{ color: '#3b6bb0' }}>{internships.length}</strong></span>
                 </div>
               </div>
             )}
@@ -303,7 +301,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
           border-radius: 8px;
           backdrop-filter: blur(24px);
           overflow: hidden;
-          color: #e2e8f0;
+          color: #1c1915;
           font-family: 'Inter', sans-serif;
           position: relative;
           box-shadow: 0 0 40px rgba(59, 130, 246, 0.1), inset 0 0 20px rgba(59, 130, 246, 0.05);
@@ -347,7 +345,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
         .corner-accent {
           position: absolute;
           width: 8px; height: 8px;
-          border-color: #3b82f6;
+          border-color: #d6603a;
           border-style: solid;
         }
         .top-left { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
@@ -372,14 +370,14 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: #3b82f6;
-          box-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6;
+          background: #d6603a;
+          box-shadow: 0 0 10px #d6603a, 0 0 20px #d6603a;
           animation: pulse 2s infinite;
           transition: background 0.4s, box-shadow 0.4s;
         }
         .dh-status-pulse.live {
-          background: #4ade80;
-          box-shadow: 0 0 10px #4ade80, 0 0 20px #4ade80;
+          background: #2f9e78;
+          box-shadow: 0 0 10px #2f9e78, 0 0 20px #2f9e78;
         }
         .dh-status-pulse.standby {
           background: #f59e0b;
@@ -397,7 +395,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
           font-weight: 700;
           letter-spacing: 0.12em;
           background: rgba(74, 222, 128, 0.15);
-          color: #4ade80;
+          color: #2f9e78;
           border: 1px solid rgba(74, 222, 128, 0.4);
           padding: 2px 8px;
           border-radius: 4px;
@@ -410,7 +408,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
           font-size: 0.9rem;
           font-weight: 700;
           letter-spacing: 0.15em;
-          color: #93c5fd;
+          color: #4c6fb0;
           text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
         }
         .dh-nav {
@@ -423,7 +421,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
         .dh-nav button {
           background: transparent;
           border: none;
-          color: #64748b;
+          color: #6f685c;
           font-family: var(--font-mono);
           font-size: 0.7rem;
           letter-spacing: 0.1em;
@@ -432,12 +430,12 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
           transition: all 0.3s ease;
         }
         .dh-nav button:hover {
-          color: #93c5fd;
+          color: #4c6fb0;
           background: rgba(59, 130, 246, 0.1);
         }
         .dh-nav button.active {
           background: rgba(59, 130, 246, 0.2);
-          color: #60a5fa;
+          color: #3b6bb0;
           box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.2);
         }
 
@@ -452,7 +450,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
         }
         .rv-main h3, .agent-view h3, .analytics-view h3 {
           margin-top: 0;
-          color: #bfdbfe;
+          color: #5b7cbb;
           font-family: var(--font-mono);
           text-transform: uppercase;
           letter-spacing: 0.1em;
@@ -475,7 +473,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
         .feed-waiting {
           font-family: var(--font-mono);
           font-size: 0.75rem;
-          color: #64748b;
+          color: #6f685c;
           text-align: center;
           padding: 60px 0;
           animation: blink 1.5s step-end infinite;
@@ -492,16 +490,16 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
           gap: 16px;
           animation: typeIn 0.3s ease forwards;
           opacity: 0;
-          color: #94a3b8;
+          color: #575047;
           word-break: break-all;
         }
         .feed-item.sys-log { 
           border-left-color: rgba(74, 222, 128, 0.5);
-          color: #6ee7b7;
+          color: #2f9e78;
         }
         .feed-item.err-log { 
           border-left-color: rgba(248, 113, 113, 0.5);
-          color: #fca5a5;
+          color: #d46b6b;
         }
         @keyframes typeIn {
           from { opacity: 0; transform: translateX(-8px); }
@@ -517,7 +515,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
         .stat-card h4, .agent-node h5 {
           margin: 0;
           font-family: var(--font-mono);
-          color: #94a3b8;
+          color: #575047;
           font-size: 0.7rem;
           letter-spacing: 0.1em;
           text-transform: uppercase;
@@ -534,7 +532,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
           font-size: 0.65rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          color: #475569;
+          color: #3a342c;
           margin-top: 8px;
         }
 
@@ -556,7 +554,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
         .domain-label {
           font-family: var(--font-mono);
           font-size: 0.72rem;
-          color: #94a3b8;
+          color: #575047;
           text-transform: uppercase;
           letter-spacing: 0.05em;
           white-space: nowrap;
@@ -565,7 +563,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
         }
         .domain-bar-track {
           height: 6px;
-          background: rgba(255,255,255,0.05);
+          background: rgba(40,34,26,0.05);
           border-radius: 3px;
           overflow: hidden;
         }
@@ -577,7 +575,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
         .domain-count {
           font-family: var(--font-mono);
           font-size: 0.75rem;
-          color: #60a5fa;
+          color: #3b6bb0;
           text-align: right;
         }
         .analytics-footer {
@@ -586,7 +584,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
           border-top: 1px solid rgba(59, 130, 246, 0.1);
           font-family: var(--font-mono);
           font-size: 0.72rem;
-          color: #475569;
+          color: #3a342c;
         }
 
         /* Agents */
@@ -612,13 +610,13 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
         .node-indicator {
           width: 8px; height: 8px;
           background: transparent;
-          border: 1px solid #3b82f6;
+          border: 1px solid #d6603a;
           transition: all 0.2s ease;
           border-radius: 50%;
         }
         .node-indicator.active { 
-          background: #3b82f6; 
-          box-shadow: 0 0 10px #3b82f6; 
+          background: #d6603a; 
+          box-shadow: 0 0 10px #d6603a; 
         }
 
         .progress-bar {
@@ -626,7 +624,7 @@ export default function InternshipClientEngine({ internships = [] }: Props) {
           overflow: hidden;
         }
         .progress-bar .fill {
-          height: 100%; background: #3b82f6; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+          height: 100%; background: #d6603a; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
         @media (max-width: 768px) {

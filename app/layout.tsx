@@ -21,7 +21,7 @@ const InternshipEngine = dynamic(() => import('./brain/InternshipEngine'));
 const IOSAdaptiveEngine = dynamic(() => import('./engines/ios/IOSAdaptiveEngine'));
 const ClientPlatformBoundary = dynamic(() => import('./brain/ClientPlatformBoundary'));
 const CookieConsent = dynamic(() => import('./components/CookieConsent'));
-const ThemeSwitcher = dynamic(() => import('./components/ThemeSwitcher'), { ssr: false });
+const ThemeSwitcher = dynamic(() => import('./components/ThemeSwitcher'));
 
 // Vercel observability — loaded async so they don't block the critical path
 import { Analytics } from '@vercel/analytics/next';
@@ -41,7 +41,7 @@ export const viewport: Viewport = {
   maximumScale: 1, // Prevents iOS input zoom
   userScalable: false,
   viewportFit: 'cover', // Required for env(safe-area-inset-*) to work on iPhones
-  themeColor: '#0a0a0c', // Matches site background
+  themeColor: '#17120e', // Matches site background
 };
 
 export const metadata: Metadata = {

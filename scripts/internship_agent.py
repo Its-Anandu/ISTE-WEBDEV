@@ -104,16 +104,44 @@ class DiscoveryAgent:
                     await page.goto(url, wait_until="domcontentloaded", timeout=15000)
                     await page.wait_for_selector(".individual_internship", timeout=5000)
                     
-                    cards = await page.locator(".individual_internship").all()
+                    # Robust selector fallback chain — Internshala renames classes over time.
+                    card_selector = (
+                        ".individual_internship, .internship_meta, "
+                        "a[href*='/internships/detail/'], a[href*='/internships/']"
+                    )
+                    await page.wait_for_selector(card_selector, timeout=8000)
+                    cards = await page.locator(".individual_internship, .internship_meta").all()
+                    if not cards:
+                        # Fall back to direct detail links
+                        links = await page.locator("a[href*='/internships/detail/']").all()
+                        for link_tag in links[:8]:
+                            href = await link_tag.get_attribute("href")
+                            title_txt = (await link_tag.inner_text()).strip()
+                            if href and title_txt:
+                                results.append({
+                                    "role": title_txt.split("\n")[0].strip() or "Internship",
+                                    "company": "Internshala",
+                                    "applyLink": f"https://internshala.com{href}",
+                                    "source": "Internshala",
+                                })
                     for card in cards[:5]:
-                        title = await card.locator("h3").inner_text()
-                        company = await card.locator(".company_name").inner_text()
+                        title = await card.locator("h3, .job-internship-name").first.inner_text()
+                        company = await card.locator(".company_name").first.inner_text()
+                        # Real per-internship application URL, not the search page.
+                        link_el = card.locator("a.view_detail_button, a[href*='/internships/detail/']").first
+                        href = ""
+                        try:
+                            href = await link_el.get_attribute("href") or ""
+                        except Exception:
+                            href = ""
+                        if href and href.startswith("/"):
+                            href = f"https://internshala.com{href}"
                         
                         if title and company:
                             results.append({
                                 "role": title.strip(),
                                 "company": company.strip(),
-                                "applyLink": url,
+                                "applyLink": href or url,
                                 "source": "Internshala"
                             })
                 except Exception as e:
@@ -124,11 +152,50 @@ class DiscoveryAgent:
         return results
 
     async def fetch_kerala_hub(self):
-        log("DISCOVERY", "Querying Kerala Hub API via HTTPX...")
-        return [
-            {"company": "TCS Infopark", "role": "AI Research Intern", "applyLink": "https://tcs.com/careers", "source": "Kerala Hub"},
-            {"company": "Nissan Digital", "role": "Embedded Systems Intern", "applyLink": "https://nissan-global.com", "source": "Kerala Hub"}
+        """
+        Crawls the live Technopark + Infopark job boards for real Kerala listings.
+        IMPORTANT FIX: This previously returned FABRICATED/hardcoded internships
+        (e.g. a fake "TCS Infopark AI Research Intern") that were pushed into the
+        live CMS as "verified". We must only ever emit listings that actually exist.
+        """
+        log("DISCOVERY", "Scraping live Technopark job board...")
+        results = []
+        real_boards = [
+            "https://www.technopark.org/job-search",
+            "https://infopark.in/jobs",
         ]
+        for url in real_boards:
+            try:
+                headers = {"User-Agent": "Mozilla/5.0 (Kerala-ISTE-Bot/1.0)"}
+                resp = requests.get(url, headers=headers, timeout=15)
+                if resp.status_code != 200:
+                    continue
+                soup = BeautifulSoup(resp.text, "html.parser")
+                # Technopark listing rows / Infopark job cards
+                for card in soup.select(
+                    ".job-row, .job-item, .job-listing, .job-card, tr, [class*='job']"
+                )[:20]:
+                    text = card.get_text(" ", strip=True)
+                    if "intern" not in text.lower():
+                        continue
+                    link = card.select_one("a[href]")
+                    if not link:
+                        continue
+                    href = link.get("href", "")
+                    if href.startswith("/"):
+                        href = f"https://www.technopark.org{href}"
+                    results.append({
+                        "company": "Technopark / Infopark Listing",
+                        "role": text[:120],
+                        "applyLink": href,
+                        "source": "Kerala Hub",
+                        "location": "Trivandrum / Kochi",
+                        "description": text,
+                    })
+            except Exception as e:
+                log("DISCOVERY", f"Kerala hub scrape failed for {url}: {e}", "WARN")
+        log("DISCOVERY", f"Kerala hub scan produced {len(results)} real listings.")
+        return results
 
     async def hunt_jobspy(self):
         log("DISCOVERY", "Launching JobSpy for LinkedIn/Indeed/Glassdoor Kerala internships...")
@@ -229,19 +296,34 @@ class AuthenticityAgent:
             item['trust_status'] = "REJECTED"
             return item
             
-        try:
-            # Using httpx for async dead-link checking
-            async with httpx.AsyncClient(timeout=5.0) as client:
-                res = await client.head(item['applyLink'], follow_redirects=True)
-                if res.status_code >= 400 and res.status_code not in [403, 405]:
-                    item['trust_status'] = "REJECTED"
-                    return item
-        except:
+        # Skip links that are placeholders / not real URLs
+        url = (item.get('applyLink') or '').strip()
+        if not url or url in ('#', '') or not url.startswith('http'):
             item['trust_status'] = "REJECTED"
+            item['rejection_reason'] = "Missing application URL"
             return item
 
-        item['trust_status'] = "VERIFIED"
-        return item
+        try:
+            # Use GET with a browser-ish UA; use HEAD first, fall back to GET on
+            # 403/405 (servers that block HEAD) rather than rejecting outright.
+            async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+                headers = {"User-Agent": "Mozilla/5.0 (compatible; ISTE-Bot/1.0; +https://iste-mbcet.vercel.app)"}
+                resp = await client.get(url, headers=headers)
+                if resp.status_code >= 400 and resp.status_code not in (403, 405, 429):
+                    item['trust_status'] = "REJECTED"
+                    item['rejection_reason'] = f"HTTP {resp.status_code}"
+                    return item
+                # 403/405/429 usually mean "exists but blocked bot" — not a dead link.
+                item['trust_status'] = "VERIFIED"
+                return item
+        except httpx.TransportError:
+            # Network blips are transient — do NOT classify as dead. Re-verify later.
+            item['trust_status'] = "UNVERIFIED"
+            item['rejection_reason'] = "Transient network error (will retry)"
+            return item
+        except Exception:
+            item['trust_status'] = "REJECTED"
+            return item
 
     async def filter_batch(self, items):
         log("AUTHENTICITY", "Running Cloudscraper domain validation...")

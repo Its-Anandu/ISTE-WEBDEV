@@ -191,9 +191,9 @@ export default function NucleusCore() {
         .n-particle {
           position: absolute;
           width: 4px; height: 4px;
-          background: #fff;
+          background: rgb(var(--c-main));
           border-radius: 50%;
-          box-shadow: 0 0 8px #fff;
+          box-shadow: 0 0 8px rgba(var(--c-main), 0.7);
         }
 
         .p1 { top: 10%; left: 50%; }

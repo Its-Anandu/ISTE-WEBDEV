@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#080810]">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f6f2ea]">
       <div className="w-[80%] max-w-[800px] flex flex-col gap-6 animate-pulse items-center mt-[-10vh]">
         {/* Skeleton Badge */}
         <div className="w-48 h-8 bg-white/5 border border-white/10 rounded-full" />

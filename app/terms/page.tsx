@@ -13,15 +13,15 @@ export default function TermsPage() {
     <main
       style={{
         minHeight: '100vh',
-        background: '#0a0a0c',
-        color: 'rgba(255,255,255,0.85)',
+        background: '#f6f2ea',
+        color: '#3a342c',
         fontFamily: 'var(--font-sans, sans-serif)',
         padding: '7rem 1.5rem 5rem',
       }}
     >
       <article style={{ maxWidth: '720px', margin: '0 auto', lineHeight: '1.8' }}>
         <header style={{ marginBottom: '3rem' }}>
-          <p style={{ color: '#7c3aed', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
+          <p style={{ color: '#c66a3c', fontSize: '0.875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
             Legal
           </p>
           <h1
@@ -30,14 +30,14 @@ export default function TermsPage() {
               fontWeight: 800,
               margin: '0 0 1rem',
               lineHeight: 1.15,
-              background: 'linear-gradient(135deg, #fff 40%, rgba(255,255,255,0.5))',
+              background: 'linear-gradient(135deg, #1c1915 40%, #6f685c)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
           >
             Terms of Service
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem' }}>
+          <p style={{ color: 'rgba(58,52,44,0.55)', fontSize: '0.875rem' }}>
             Last updated: {updated}
           </p>
         </header>
@@ -104,7 +104,7 @@ export default function TermsPage() {
         <Section title="10. Privacy">
           <p>
             Your use of the Service is also governed by our{' '}
-            <a href="/privacy" style={{ color: '#7c3aed' }}>
+            <a href="/privacy" style={{ color: '#c66a3c' }}>
               Privacy Policy
             </a>
             , which is incorporated into these Terms by reference.
@@ -126,11 +126,11 @@ export default function TermsPage() {
         <Section title="13. Contact">
           <p>
             If you have questions about these Terms, contact us at{' '}
-            <a href="mailto:iste@mbcet.ac.in" style={{ color: '#7c3aed' }}>
+            <a href="mailto:iste@mbcet.ac.in" style={{ color: '#c66a3c' }}>
               iste@mbcet.ac.in
             </a>.
           </p>
-          <address style={{ fontStyle: 'normal', marginTop: '0.5rem', color: 'rgba(255,255,255,0.5)' }}>
+          <address style={{ fontStyle: 'normal', marginTop: '0.5rem', color: 'rgba(58,52,44,0.6)' }}>
             ISTE Student Chapter<br />
             Mar Baselios College of Engineering and Technology<br />
             Nalanchira, Trivandrum — 695015<br />
@@ -145,10 +145,10 @@ export default function TermsPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section style={{ marginBottom: '2.5rem' }}>
-      <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', marginBottom: '0.75rem' }}>
+      <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1c1915', marginBottom: '0.75rem' }}>
         {title}
       </h2>
-      <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.9375rem' }}>{children}</div>
+      <div style={{ color: 'rgba(58,52,44,0.75)', fontSize: '0.9375rem' }}>{children}</div>
     </section>
   );
 }

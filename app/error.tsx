@@ -16,7 +16,7 @@ export default function Error({
   }, [error])
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6" style={{ background: '#0a0a0c', position: 'relative', overflow: 'hidden' }}>
+    <div className="min-h-screen w-full flex items-center justify-center p-6" style={{ background: '#f6f2ea', position: 'relative', overflow: 'hidden' }}>
       {/* Background Ambience */}
       <div style={{
         position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -48,7 +48,7 @@ export default function Error({
           </svg>
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', color: '#f8fafc', marginBottom: '16px', letterSpacing: '-0.02em', textShadow: '0 0 30px rgba(220,38,38,0.5)' }}>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', color: '#1c1915', marginBottom: '16px', letterSpacing: '-0.02em', textShadow: '0 0 30px rgba(220,38,38,0.5)' }}>
           System Malfunction
         </h1>
         
