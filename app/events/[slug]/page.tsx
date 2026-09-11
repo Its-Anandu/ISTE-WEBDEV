@@ -6,86 +6,94 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { PortableText } from '@portabletext/react'
 import HomeAnimations from '@/app/components/HomeAnimations'
-import dynamic from 'next/dynamic'
-const EventCountdown = dynamic(() => import('@/app/components/EventCountdown'), { ssr: false })
-const GalleryLightbox = dynamic(() => import('@/app/components/GalleryLightbox'), { ssr: false })
+import RegistrationForm from './register/RegistrationForm'
+import EventCountdown from '@/app/components/EventCountdown'
+import GalleryLightbox from '@/app/components/GalleryLightbox'
 
 import { Metadata } from 'next'
 
 // Revalidate this page every 60 seconds
 export const revalidate = 60
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+const SAMPLE_EVENTS_MAP: Record<string, any> = {
+  novatos: {
+    _id: 'novatos-2026',
+    title: "NOVATOS '26",
+    slug: 'novatos',
+    dateLabel: '19 SEP 2026',
+    eventType: 'Flagship Orientation & Innovation Bootcamp',
+    status: 'upcoming',
+    isCurrentlyHappening: true,
+    description: [
+      {
+        _type: 'block',
+        children: [
+          {
+            _type: 'span',
+            text: "NOVATOS '26 is the premier annual flagship orientation, hands-on technical workshop series, and innovation bootcamp hosted by the ISTE Student Chapter at Mar Baselios College of Engineering and Technology (MBCET). Register below to secure your entry and complete payment verification.",
+          },
+        ],
+      },
+    ],
+  },
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  const event = await getClient().fetch(eventBySlugQuery, { slug })
+  let event = null
+  try {
+    event = await getClient().fetch(eventBySlugQuery, { slug })
+  } catch {
+    // Sanity unconfigured fallback
+  }
+
+  if (!event) {
+    event = SAMPLE_EVENTS_MAP[slug]
+  }
 
   if (!event) return {}
 
-  const description = event.description?.[0]?.children?.[0]?.text || `Learn more about ${event.title} at ISTE MBCET.`
+  const description = typeof event.description === 'string'
+    ? event.description
+    : event.description?.[0]?.children?.[0]?.text || `Learn more about ${event.title} at ISTE MBCET.`
 
   return {
-    title: event.title,
+    title: `${event.title} | ISTE MBCET Events`,
     description: description,
-    openGraph: {
-      title: event.title,
-      description: description,
-      type: 'article',
-      images: event.gallery?.[0] ? [urlForImage(event.gallery[0]).width(1200).height(630).url()] : ['/iste.png'],
-    },
   }
 }
 
-export default async function EventPage({ params }: { params: { slug: string } }) {
+export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const event = await getClient().fetch(eventBySlugQuery, { slug })
-  
+  let event = null
+  try {
+    event = await getClient().fetch(eventBySlugQuery, { slug })
+  } catch {
+    // Sanity unconfigured fallback
+  }
+
+  if (!event) {
+    event = SAMPLE_EVENTS_MAP[slug]
+  }
+
   if (!event) {
     notFound()
   }
 
-  // Structured Data (JSON-LD)
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Event',
-    name: event.title,
-    startDate: event.date,
-    description: event.description?.[0]?.children?.[0]?.text || '',
-    eventStatus: event.status === 'upcoming' ? 'https://schema.org/EventScheduled' : 'https://schema.org/EventPostponed',
-    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    location: {
-      '@type': 'Place',
-      name: 'Mar Baselios College of Engineering and Technology',
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: 'Nalanchira',
-        addressLocality: 'Thiruvananthapuram',
-        addressRegion: 'Kerala',
-        postalCode: '695015',
-        addressCountry: 'IN',
-      },
-    },
-    organizer: {
-      '@type': 'Organization',
-      name: 'ISTE MBCET Student\'s Chapter',
-      url: 'https://iste-mbcet.vercel.app',
-    },
-  }
-
   // Fetch settings for Navbar/Footer
-  const sanityData = await getClient().fetch(homePageQuery)
+  let sanityData: any = null
+  try {
+    sanityData = await getClient().fetch(homePageQuery)
+  } catch {
+    // Fallback
+  }
   const settings = sanityData?.settings || {}
   const navCta = settings.navCtaLabel || "Join Now"
   const footerTagline = settings.footerTagline || "Indian Society for Technical Education — Mar Baselios College of Engineering and Technology Student Chapter, Kerala."
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
       <HomeAnimations heroTypedText="ISTE MBCET EVENTS" />
-
-
 
       {/* Grid Background */}
       <div className="grid-lines" style={{ position: 'fixed', zIndex: -1 }}>
@@ -123,12 +131,12 @@ export default async function EventPage({ params }: { params: { slug: string } }
         </div>
       </div>
 
-      <main style={{ minHeight: '100dvh', paddingTop: '60px' }}>
+      <main style={{ minHeight: '100dvh', paddingTop: '60px', paddingBottom: '100px' }}>
         <div className="event-hero">
           <Link href="/#events" style={{ display: 'inline-block', marginBottom: '32px', color: 'var(--g400)', textDecoration: 'none', fontFamily: 'var(--font-mono)', letterSpacing: '0.1em', fontSize: '0.85rem' }}>← BACK TO EVENTS</Link>
           <h1 className="event-hero-title reveal">{event.title}</h1>
           <div className="event-meta reveal d1">
-            <span>{event.dateLabel}</span>
+            <span style={{ fontWeight: 600, color: 'var(--c-alt1)' }}>{event.dateLabel}</span>
             {event.eventType && (
               <>
                 <span style={{ color: 'var(--g600)' }}>•</span>
@@ -136,34 +144,30 @@ export default async function EventPage({ params }: { params: { slug: string } }
               </>
             )}
             <span style={{ color: 'var(--g600)' }}>•</span>
-            <span style={{ color: event.status === 'upcoming' ? '#d6783e' : 'var(--g400)' }}>{event.status === 'upcoming' ? 'UPCOMING' : 'PAST EVENT'}</span>
+            <span style={{ color: event.isCurrentlyHappening ? '#ef4444' : event.status === 'upcoming' ? '#d6783e' : 'var(--g400)', fontWeight: 600 }}>
+              {event.isCurrentlyHappening ? 'HAPPENING NOW' : event.status === 'upcoming' ? 'UPCOMING' : 'PAST EVENT'}
+            </span>
           </div>
-          {event.status === 'upcoming' && event.registrationLink && (
-            <div className="reveal d2" style={{ marginTop: '32px' }}>
-              <a href={event.registrationLink} target="_blank" rel="noopener noreferrer" className="hero-btn-primary" style={{ display: 'inline-flex' }}>
-                Register Now
-                <span className="hero-btn-arrow">→</span>
-              </a>
-            </div>
-          )}
         </div>
 
         {event.description && (
-          <div className="event-body-content reveal d2">
-            <PortableText value={event.description} />
+          <div className="event-body-content reveal d2" style={{ maxWidth: '800px', margin: '0 auto 40px auto', padding: '0 24px', lineHeight: 1.8, fontSize: '1.05rem', color: 'var(--white)' }}>
+            {Array.isArray(event.description) ? (
+              <PortableText value={event.description} />
+            ) : (
+              <p>{event.description}</p>
+            )}
           </div>
         )}
 
-        {/* Countdown Timer — shown for upcoming events with a date */}
-        {event.status === 'upcoming' && event.date && (
-          <div className="reveal d2">
-            <EventCountdown targetDate={event.date} eventTitle={event.title} />
-          </div>
-        )}
+        {/* Embedded Registration Form Section */}
+        <div className="reveal d3" style={{ maxWidth: '720px', margin: '40px auto 60px auto', padding: '0 16px' }}>
+          <RegistrationForm slug={slug} />
+        </div>
 
-        {/* Interactive Gallery Lightbox */}
+        {/* Gallery Lightbox if available */}
         {event.gallery && event.gallery.length > 0 && (
-          <div className="reveal d3">
+          <div className="reveal d4" style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#64748b', marginBottom: '16px' }}>
               Gallery — {event.gallery.length} Photo{event.gallery.length !== 1 ? 's' : ''}
             </div>
@@ -173,13 +177,6 @@ export default async function EventPage({ params }: { params: { slug: string } }
                 alt: `${event.title} — photo ${i + 1}`,
               }))}
             />
-          </div>
-        )}
-
-        {event.status === 'past' && event.fullReport && (
-          <div className="event-body-content reveal d4" style={{ marginTop: '20px' }}>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', marginBottom: '32px', color: 'var(--white)', borderTop: '1px solid var(--border)', paddingTop: '60px' }}>Full Event Report</h2>
-            <PortableText value={event.fullReport} />
           </div>
         )}
       </main>

@@ -157,17 +157,20 @@ export default function MagneticCursor() {
       })
     }
 
-    // Attach to highly interactive elements
-    const interactables = document.querySelectorAll('a, button, input, textarea, .execom-card, .junior-card, .team-card, .event-row, .benefit-card, .assistant-dock-btn, .internship-card, .intern-apply-btn, .launchpad-preview-card, .nav-logo')
+    let interactables: NodeListOf<Element> | null = null
 
-    interactables.forEach(el => {
-      // Force element to use relative or absolute positioning for translations to apply natively
-      const currentPos = window.getComputedStyle(el).position
-      if (currentPos === 'static' && !el.classList.contains('nav-logo')) {
-        (el as HTMLElement).style.position = 'relative'
-      }
-      el.addEventListener('mouseenter', onMouseEnter)
-      el.addEventListener('mouseleave', onMouseLeave)
+    // Attach to highly interactive elements after hydration frame
+    requestAnimationFrame(() => {
+      interactables = document.querySelectorAll('a, button, input, textarea, .execom-card, .junior-card, .team-card, .event-row, .benefit-card, .assistant-dock-btn, .internship-card, .intern-apply-btn, .launchpad-preview-card, .nav-logo')
+
+      interactables.forEach(el => {
+        const currentPos = window.getComputedStyle(el).position
+        if (currentPos === 'static' && !el.classList.contains('nav-logo')) {
+          (el as HTMLElement).style.position = 'relative'
+        }
+        el.addEventListener('mouseenter', onMouseEnter)
+        el.addEventListener('mouseleave', onMouseLeave)
+      })
     })
 
 
@@ -212,11 +215,13 @@ export default function MagneticCursor() {
       clearTimeout(idleTimer)
       breathingAnim.kill()
       
-      interactables.forEach(el => {
-        el.removeEventListener('mouseenter', onMouseEnter)
-        el.removeEventListener('mouseleave', onMouseLeave)
-        gsap.killTweensOf(el)
-      })
+      if (interactables) {
+        interactables.forEach(el => {
+          el.removeEventListener('mouseenter', onMouseEnter)
+          el.removeEventListener('mouseleave', onMouseLeave)
+          gsap.killTweensOf(el)
+        })
+      }
       if (document.head.contains(style)) {
         document.head.removeChild(style)
       }
