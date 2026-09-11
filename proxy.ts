@@ -1,7 +1,24 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server';
+import { createClient } from '@/utils/supabase/middleware';
 
 export async function proxy(request: NextRequest) {
-  const response = NextResponse.next()
+  const path = request.nextUrl.pathname;
+
+  // Protect /admin/* routes (except /admin/login)
+  if (path.startsWith('/admin') && path !== '/admin/login') {
+    const hasAuthCookie = request.cookies.getAll().some((c) =>
+      c.name.includes('sb-') && c.name.includes('-auth-token')
+    );
+
+    if (!hasAuthCookie) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = '/admin/login';
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // Refresh Supabase session if needed
+  const response = createClient(request);
 
   // Security Headers
   const cspHeader = `
@@ -14,27 +31,23 @@ export async function proxy(request: NextRequest) {
     frame-ancestors 'self';
     object-src 'none';
     base-uri 'self';
-  `.replace(/\s{2,}/g, ' ').trim()
+  `.replace(/\s{2,}/g, ' ').trim();
 
-  response.headers.set('Content-Security-Policy', cspHeader)
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-XSS-Protection', '1; mode=block')
-  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
+  response.headers.set('Content-Security-Policy', cspHeader);
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
 
-  return response
+  return response;
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * Match all request paths except for static files
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-}
+};

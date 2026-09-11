@@ -28,7 +28,18 @@ import ExecomFlipCard from '@/app/components/ExecomFlipCard'
 
 
 // Fallback data when Sanity has no content yet
+const NOVATOS_EVENT = {
+  _id: 'novatos-2026',
+  dateLabel: '19 SEP 2026',
+  title: "NOVATOS '26",
+  slug: 'novatos',
+  eventType: 'Flagship Orientation & Innovation Bootcamp',
+  isCurrentlyHappening: true,
+  link: null
+}
+
 const FALLBACK_EVENTS = [
+  NOVATOS_EVENT,
   { _id: '1', dateLabel: 'MAR 2026', title: 'Engineering your own Path', eventType: 'IEEE Collab', link: null },
   { _id: '2', dateLabel: 'MAR 2026', title: 'Unseen Problem', eventType: 'IEEE Collab', link: null },
   { _id: '3', dateLabel: 'MAR 2026', title: 'Lumera', eventType: 'IEEE Collab', link: null },
@@ -38,7 +49,6 @@ const FALLBACK_EVENTS = [
   { _id: '7', dateLabel: 'NOV 2025', title: 'Through My Younger Eyes Poster Challenge', eventType: 'Competition', link: null },
   { _id: '8', dateLabel: 'OCT 2025', title: 'Rising Tuskers', eventType: 'A Football based Fun event in collab with Kombans Fanatics', link: null },
   { _id: '9', dateLabel: 'OCT 2025', title: 'ISTE CONNECT', eventType: 'An Interactive session with new ISTE Members', link: null },
-
 ]
 
 const FALLBACK_STATS = [
@@ -47,8 +57,6 @@ const FALLBACK_STATS = [
   { _id: 's3', label: 'Industry Partners', value: 5, suffix: '+' },
   { _id: 's4', label: 'Member Satisfaction', value: 95, suffix: '%' },
 ]
-
-
 
 const DELAY_CLASSES = ['', 'd1', 'd2', 'd3', 'd1', 'd2', 'd3', 'd4', '', 'd1', 'd2', 'd3']
 
@@ -62,7 +70,8 @@ export default async function Home() {
     // Sanity unreachable — fall through to hardcoded data
   }
 
-  const events = sanityData?.events?.length ? sanityData.events : FALLBACK_EVENTS
+  const rawEvents = sanityData?.events?.length ? sanityData.events : FALLBACK_EVENTS
+  const events = [NOVATOS_EVENT, ...rawEvents.filter((e: any) => e.slug !== 'novatos')]
   const rawStats = sanityData?.stats?.length ? sanityData.stats : FALLBACK_STATS
   const stats = rawStats.filter((stat: any, index: number, self: any[]) =>
     index === self.findIndex((t: any) => t.label === stat.label)
@@ -779,7 +788,7 @@ export default async function Home() {
     { label: 'Who We Are', href: '#who' },
     { label: 'Benefits', href: '#benefits' },
     { label: 'ExeCom', href: '#execom' },
-    { label: 'Events', href: '#events' },
+    { label: 'Events', href: '/events' },
     { label: 'Launchpad ✦', href: '/internships', isHighlighted: true },
   ]
   const footerCols = navigationMenu?.footerColumns || []
@@ -939,7 +948,7 @@ export default async function Home() {
       {/* CMS Driven Sections */}
       {sectionsToRender.map((sectionId: string) => {
         const renderFunc = sectionRenderers[sectionId]
-        if (renderFunc) return renderFunc()
+        if (renderFunc) return <div key={sectionId}>{renderFunc()}</div>
         return null
       })}
 

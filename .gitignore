@@ -13,8 +13,10 @@
 /out/
 /build
 
-# ── Environment files ─────────────────────────────────────────────────────────
+# ── Environment files & Local Database Backup ─────────────────────────
 .env*
+data/
+
 
 # ── TypeScript ────────────────────────────────────────────────────────────────
 *.tsbuildinfo
