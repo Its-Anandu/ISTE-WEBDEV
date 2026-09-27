@@ -93,26 +93,36 @@ export default function SecurityGuardian() {
     window.addEventListener('input', handleInput, true);
 
     // ── 3. DOM IMMUNE SYSTEM (Mutation Observer) ───────────────────────
-    // DISABLED ON iOS TO PREVENT WEBKIT MEMORY CRASHES
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    // DISABLED IN DEV & ON iOS TO PREVENT WEBKIT MEMORY CRASHES AND NEXT.JS HMR DISCONNECTIONS
+    const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isDev = process.env.NODE_ENV === 'development';
     
     let observer: MutationObserver | null = null;
-    if (!isIOS) {
+    if (!isIOS && !isDev) {
       observer = new MutationObserver((mutations) => {
         if (isLockedDown.current) return;
         
         for (const mutation of mutations) {
-        for (const node of Array.from(mutation.addedNodes)) {
-          if (node.nodeName.toLowerCase() === 'script') {
-            const scriptNode = node as HTMLScriptElement;
-            if (!scriptNode.src.includes('_next') && !scriptNode.src.includes('vercel')) {
-              handleHardThreat('UNAUTHORIZED_SCRIPT_INJECTION', `Detected unknown script: ${scriptNode.src || 'inline'}`);
+          for (const node of Array.from(mutation.addedNodes)) {
+            if (node.nodeName.toLowerCase() === 'script') {
+              const scriptNode = node as HTMLScriptElement;
+              const src = scriptNode.src || '';
+              // Safely allow Next.js, Vercel, React, Webpack, HMR & Inline scripts
+              if (
+                !src || 
+                src.includes('_next') || 
+                src.includes('vercel') || 
+                src.includes('webpack') || 
+                src.includes('react')
+              ) {
+                continue;
+              }
+              handleHardThreat('UNAUTHORIZED_SCRIPT_INJECTION', `Detected unknown script: ${src}`);
               scriptNode.remove(); // Neutralize
             }
           }
         }
-      }
-    });
+      });
       observer.observe(document.documentElement, { childList: true, subtree: true });
     }
 
