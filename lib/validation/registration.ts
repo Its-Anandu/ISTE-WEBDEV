@@ -17,12 +17,22 @@ export const registrationSchema = z.object({
   college: z
     .string()
     .trim()
-    .min(1, 'College or Department is required.'),
-  yearOfStudy: z.enum(['1st', '2nd', '3rd', '4th'], {
-    message: 'Please select a valid year of study (1st, 2nd, 3rd, 4th).',
-  }),
+    .min(1, 'College is required.'),
+  department: z
+    .string()
+    .trim()
+    .min(1, 'Department is required.'),
+  yearOfStudy: z
+    .string()
+    .trim()
+    .min(1, 'Year of study is required.'),
+  classGroup: z
+    .string()
+    .trim()
+    .min(1, 'Class is required.'),
   isteId: z.string().trim().optional(),
   eventId: z.string().trim().min(1, 'Event ID is required.'),
+  registrationId: z.string().trim().optional(),
 });
 
 export const paymentConfirmationSchema = z.object({

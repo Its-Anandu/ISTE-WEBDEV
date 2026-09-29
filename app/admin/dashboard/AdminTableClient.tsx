@@ -272,8 +272,8 @@ export default function AdminTableClient({
                         <span className="text-emerald-500 font-medium text-[11px]">Verified</span>
                       ) : (
                         <button
-                          onClick={() => handleVerifyPayment(r.registrationId)}
-                          disabled={verifyingId === r.registrationId}
+                          onClick={() => handleVerifyPayment(r.registrationId || r.paymentRef || '')}
+                          disabled={verifyingId === (r.registrationId || r.paymentRef)}
                           className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg text-[11px] transition-all disabled:opacity-50 inline-flex items-center gap-1"
                         >
                           {verifyingId === r.registrationId ? (

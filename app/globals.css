@@ -4,6 +4,12 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { overflow-x: hidden; overflow-y: scroll; }
 
+    input, select, textarea, button {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
+
 :root {
       /* ── Light paper base — warm museum-white, not blue-grey ── */
       --black:    #f6f2ea;

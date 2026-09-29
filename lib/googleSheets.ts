@@ -4,13 +4,15 @@ import path from 'path';
 
 export interface RegistrationData {
   timestamp?: string;
-  registrationId: string;
+  registrationId?: string;
   eventId: string;
   fullName: string;
   email: string;
   phone: string;
   college: string;
+  department: string;
   yearOfStudy: string;
+  classGroup: string;
   isteId?: string;
   paymentStatus?: string;
   paymentRef?: string;
@@ -53,7 +55,8 @@ function writeLocalRegistrations(data: RegistrationData[]) {
 
 function saveToLocal(item: RegistrationData) {
   const list = readLocalRegistrations();
-  const existingIdx = list.findIndex((r) => r.registrationId === item.registrationId);
+  const targetId = item.registrationId || item.email;
+  const existingIdx = list.findIndex((r) => (r.registrationId || r.email) === targetId);
   if (existingIdx >= 0) {
     list[existingIdx] = { ...list[existingIdx], ...item };
   } else {
@@ -63,17 +66,18 @@ function saveToLocal(item: RegistrationData) {
 }
 
 /**
- * Standard column headers array for Google Sheets (A1:K1)
+ * Standard column headers array for Google Sheets (A1:L1)
  */
 const EXPECTED_HEADERS = [
   'Timestamp',
-  'RegistrationID',
   'EventID',
   'FullName',
   'Email',
   'Phone',
   'College',
+  'Department',
   'Year',
+  'Class',
   'ISTEMembershipID',
   'PaymentStatus',
   'PaymentRef',
@@ -116,13 +120,13 @@ function getSheetsClient() {
 }
 
 /**
- * Ensures header row A1:K1 in Google Sheets matches EXPECTED_HEADERS.
+ * Ensures header row A1:L1 in Google Sheets matches EXPECTED_HEADERS.
  */
 async function ensureSheetHeaders(sheets: any, spreadsheetId: string) {
   try {
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Registrations!A1:K1',
+      range: 'Registrations!A1:L1',
     });
     const firstRow = res.data.values?.[0] || [];
     const isMatching = EXPECTED_HEADERS.every((h, i) => (firstRow[i] || '').trim() === h);
@@ -130,13 +134,13 @@ async function ensureSheetHeaders(sheets: any, spreadsheetId: string) {
     if (!isMatching) {
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: 'Registrations!A1:K1',
+        range: 'Registrations!A1:L1',
         valueInputOption: 'USER_ENTERED',
         requestBody: {
           values: [EXPECTED_HEADERS],
         },
       });
-      console.log('[Google Sheets] Updated sheet A1:K1 headers to standard layout.');
+      console.log('[Google Sheets] Updated sheet A1:L1 headers to standard layout.');
     }
   } catch (err: any) {
     console.warn('[Google Sheets] Warning checking/updating headers:', err?.message || err);
@@ -157,22 +161,22 @@ export async function checkDuplicateRegistration(
     const { sheets, spreadsheetId } = getSheetsClient();
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Registrations!A:K',
+      range: 'Registrations!A:L',
     });
 
     const rows = response.data.values || [];
     if (rows.length > 1) {
       for (let i = 1; i < rows.length; i++) {
-        // Col C (index 2) = EventID, Col E (index 4) = Email
-        const rowEventId = (rows[i][2] || '').trim().toLowerCase();
-        const rowEmail = (rows[i][4] || '').trim().toLowerCase();
+        // Col B (index 1) = EventID, Col D (index 3) = Email
+        const rowEventId = (rows[i][1] || '').trim().toLowerCase();
+        const rowEmail = (rows[i][3] || '').trim().toLowerCase();
 
         if (rowEventId === normalizedEventId && rowEmail === normalizedEmail) {
           return {
             isDuplicate: true,
-            registrationId: rows[i][1] || '',
-            fullName: rows[i][3] || '',
-            paymentStatus: rows[i][9] || 'Pending',
+            registrationId: rows[i][11] || rows[i][1] || '',
+            fullName: rows[i][2] || '',
+            paymentStatus: rows[i][10] || 'Pending',
           };
         }
       }
@@ -190,7 +194,7 @@ export async function checkDuplicateRegistration(
   if (found) {
     return {
       isDuplicate: true,
-      registrationId: found.registrationId,
+      registrationId: found.registrationId || found.paymentRef,
       fullName: found.fullName,
       paymentStatus: found.paymentStatus || 'Pending',
     };
@@ -207,30 +211,31 @@ export async function appendRegistrationRow(data: RegistrationData): Promise<voi
   const rowItem: RegistrationData = {
     ...data,
     timestamp,
-    paymentStatus: data.paymentStatus || 'Pending',
-    paymentRef: data.paymentRef || '',
+    paymentStatus: data.paymentStatus || 'Incomplete',
+    paymentRef: data.paymentRef || data.registrationId || '',
   };
 
   // Always save to local backup as well
   saveToLocal(rowItem);
 
-  // Exact column alignment matching headers:
-  // A: Timestamp, B: RegistrationID, C: EventID, D: FullName, E: Email, F: Phone, G: College, H: Year, I: ISTEMembershipID, J: PaymentStatus, K: PaymentRef
+  // Exact column alignment matching EXPECTED_HEADERS A:L:
+  // A: Timestamp, B: EventID, C: FullName, D: Email, E: Phone, F: College, G: Department, H: Year, I: Class, J: ISTEMembershipID, K: PaymentStatus, L: PaymentRef
   const rowValues = [
     timestamp,
-    rowItem.registrationId,
     rowItem.eventId,
     rowItem.fullName,
     rowItem.email,
     rowItem.phone,
     rowItem.college,
+    rowItem.department,
     rowItem.yearOfStudy,
+    rowItem.classGroup,
     rowItem.isteId || '',
     rowItem.paymentStatus,
     rowItem.paymentRef,
   ];
 
-  const range = 'Registrations!A:K';
+  const range = 'Registrations!A:L';
   const { sheets, spreadsheetId } = getSheetsClient();
 
   console.log('Writing to:', spreadsheetId, range);
@@ -245,9 +250,9 @@ export async function appendRegistrationRow(data: RegistrationData): Promise<voi
         values: [rowValues],
       },
     });
-    console.log(`[Google Sheets] Successfully appended row for ${rowItem.registrationId} to spreadsheet ${spreadsheetId}`);
+    console.log(`[Google Sheets] Successfully appended row for ${rowItem.email} to spreadsheet ${spreadsheetId}`);
   } catch (error: any) {
-    console.error('SHEETS WRITE ERROR:', JSON.stringify(error, null, 2));
+    console.error('SHEETS WRITE ERROR:', error?.stack || error);
     if (
       error?.message?.includes('invalid_grant') ||
       error?.message?.includes('account not found') ||
@@ -265,14 +270,15 @@ export async function appendRegistrationRow(data: RegistrationData): Promise<voi
  */
 export async function updatePaymentReference(
   registrationId: string,
-  utrNumber: string
+  utrNumber: string,
+  status: string = 'Completed'
 ): Promise<boolean> {
   let updatedLocal = false;
 
   const localList = readLocalRegistrations();
-  const item = localList.find((r) => r.registrationId === registrationId);
+  const item = localList.find((r) => r.registrationId === registrationId || r.email === registrationId);
   if (item) {
-    item.paymentStatus = 'Awaiting Verification';
+    item.paymentStatus = status;
     item.paymentRef = utrNumber;
     writeLocalRegistrations(localList);
     updatedLocal = true;
@@ -282,30 +288,30 @@ export async function updatePaymentReference(
     const { sheets, spreadsheetId } = getSheetsClient();
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Registrations!A:K',
+      range: 'Registrations!A:L',
     });
 
     const rows = response.data.values || [];
     let targetRowIndex = -1;
     for (let i = 1; i < rows.length; i++) {
-      // Col B (index 1) = RegistrationID
-      if (rows[i][1] === registrationId) {
+      // Col L (index 11) = PaymentRef / Registration ID, or Col D (index 3) = Email
+      if (rows[i][11] === registrationId || rows[i][3] === registrationId) {
         targetRowIndex = i + 1; // 1-based row index
         break;
       }
     }
 
     if (targetRowIndex !== -1) {
-      // Col J (index 9) = PaymentStatus, Col K (index 10) = PaymentRef
+      // Col K (index 10) = PaymentStatus, Col L (index 11) = PaymentRef
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `Registrations!J${targetRowIndex}:K${targetRowIndex}`,
+        range: `Registrations!K${targetRowIndex}:L${targetRowIndex}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
-          values: [['Awaiting Verification', utrNumber]],
+          values: [[status, utrNumber]],
         },
       });
-      console.log(`[Google Sheets] Updated PaymentStatus to Awaiting Verification for ${registrationId}`);
+      console.log(`[Google Sheets] Updated PaymentStatus to ${status} for ${registrationId}`);
       return true;
     }
   } catch (err: any) {
@@ -323,23 +329,25 @@ export async function getAllRegistrations(): Promise<RegistrationData[]> {
     const { sheets, spreadsheetId } = getSheetsClient();
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Registrations!A:K',
+      range: 'Registrations!A:L',
     });
 
     const rows = response.data.values || [];
     if (rows.length > 1) {
       return rows.slice(1).map((row) => ({
         timestamp: row[0] || '',
-        registrationId: row[1] || '',
-        eventId: row[2] || '',
-        fullName: row[3] || '',
-        email: row[4] || '',
-        phone: row[5] || '',
-        college: row[6] || '',
+        eventId: row[1] || '',
+        fullName: row[2] || '',
+        email: row[3] || '',
+        phone: row[4] || '',
+        college: row[5] || '',
+        department: row[6] || '',
         yearOfStudy: row[7] || '',
-        isteId: row[8] || '',
-        paymentStatus: row[9] || 'Pending',
-        paymentRef: row[10] || '',
+        classGroup: row[8] || '',
+        isteId: row[9] || '',
+        paymentStatus: row[10] || 'Pending',
+        paymentRef: row[11] || '',
+        registrationId: row[11] || '',
       }));
     }
   } catch (err: any) {
@@ -356,7 +364,7 @@ export async function verifyPaymentStatus(registrationId: string): Promise<boole
   let updatedLocal = false;
 
   const localList = readLocalRegistrations();
-  const item = localList.find((r) => r.registrationId === registrationId);
+  const item = localList.find((r) => r.registrationId === registrationId || r.email === registrationId);
   if (item) {
     item.paymentStatus = 'Confirmed';
     writeLocalRegistrations(localList);
@@ -367,23 +375,23 @@ export async function verifyPaymentStatus(registrationId: string): Promise<boole
     const { sheets, spreadsheetId } = getSheetsClient();
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: 'Registrations!A:K',
+      range: 'Registrations!A:L',
     });
 
     const rows = response.data.values || [];
     let targetRowIndex = -1;
     for (let i = 1; i < rows.length; i++) {
-      if (rows[i][1] === registrationId) {
+      if (rows[i][11] === registrationId || rows[i][3] === registrationId) {
         targetRowIndex = i + 1;
         break;
       }
     }
 
     if (targetRowIndex !== -1) {
-      // Col J (index 9) = PaymentStatus
+      // Col K (index 10) = PaymentStatus
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `Registrations!J${targetRowIndex}`,
+        range: `Registrations!K${targetRowIndex}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
           values: [['Confirmed']],

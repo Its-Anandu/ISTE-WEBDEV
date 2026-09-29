@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { registrationSchema } from '@/lib/validation/registration';
-import { appendRegistrationRow, checkDuplicateRegistration } from '@/lib/googleSheets';
+import { appendRegistrationRow, checkDuplicateRegistration, updatePaymentReference } from '@/lib/googleSheets';
 import { generateUpiQrDataUrl } from '@/lib/generateUpiQr';
 
 // Placeholder constant for event registration fee (INR).
@@ -28,8 +28,6 @@ function checkRateLimit(ip: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  console.log('[DEBUG RUNTIME SPREADSHEET ID]:', process.env.GOOGLE_SHEETS_SPREADSHEET_ID);
-  console.log('[DEBUG RUNTIME CLIENT EMAIL]:', process.env.GOOGLE_SHEETS_CLIENT_EMAIL);
   try {
     // Extract IP address for rate limiting
     const ip =
@@ -46,7 +44,62 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    // Map `slug` to `eventId` if `eventId` wasn't explicitly passed
+    // Check if this is a payment proof upload action
+    if (body.action === 'payment') {
+      const { refId, email, mime, fileName, data } = body;
+
+      if (!data || !mime) {
+        return NextResponse.json(
+          { error: 'Payment screenshot file is required.' },
+          { status: 400 }
+        );
+      }
+
+      if (!/^image\/(jpeg|jpg|png)$/i.test(mime)) {
+        return NextResponse.json(
+          { error: 'Only JPG or PNG images are allowed.' },
+          { status: 400 }
+        );
+      }
+
+      const targetId = refId || email;
+      if (!targetId) {
+        return NextResponse.json(
+          { error: 'Reference ID or Email is required.' },
+          { status: 400 }
+        );
+      }
+
+      // If Google Apps Script Web App URL is configured, forward to Apps Script
+      const scriptUrl = process.env.GOOGLE_SHEETS_SCRIPT_URL;
+      if (scriptUrl) {
+        try {
+          const res = await fetch(scriptUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(body),
+          });
+          const result = await res.json();
+          if (result.status === 'error') {
+            return NextResponse.json({ error: result.message || 'Payment update failed.' }, { status: 400 });
+          }
+        } catch (fetchErr) {
+          console.warn('[Apps Script Proxy Error]:', fetchErr);
+        }
+      }
+
+      // Update in Google Sheets / local storage
+      const updated = await updatePaymentReference(targetId, fileName || 'Screenshot Uploaded');
+
+      return NextResponse.json({
+        success: true,
+        status: 'ok',
+        message: 'Registration complete! Payment proof received.',
+        updated,
+      });
+    }
+
+    // Standard Registration flow
     const payload = {
       ...body,
       eventId: body.eventId || body.slug,
@@ -76,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate unique registration ID
-    const registrationId = crypto.randomUUID();
+    const registrationId = payload.registrationId || payload.referenceId || `NV-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
     // Append to Google Sheets
     await appendRegistrationRow({
@@ -86,10 +139,12 @@ export async function POST(request: NextRequest) {
       email: data.email,
       phone: data.phone,
       college: data.college,
+      department: data.department,
       yearOfStudy: data.yearOfStudy,
+      classGroup: data.classGroup,
       isteId: data.isteId || '',
       paymentStatus: 'Pending',
-      paymentRef: '',
+      paymentRef: registrationId,
     });
 
     // Generate UPI Payment QR code Data URL
@@ -107,12 +162,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       registrationId,
+      reference_id: registrationId,
       qrDataUrl,
       amount: EVENT_FEE_INR,
       message: 'Registration submitted successfully.',
     });
   } catch (error: any) {
-    console.error('[API /api/register Error]:', error);
+    console.error('[API /api/register Error]:', error?.stack || error);
 
     return NextResponse.json(
       { error: error?.message || 'Failed to submit registration. Please try again later.' },
