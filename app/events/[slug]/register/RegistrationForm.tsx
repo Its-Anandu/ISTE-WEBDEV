@@ -147,6 +147,8 @@ export default function RegistrationForm({ slug }: RegistrationFormProps) {
   const [step, setStep] = useState<'form' | 'payment' | 'lookup'>('form');
   const [referenceId, setReferenceId] = useState<string>('');
   const [copiedId, setCopiedId] = useState<boolean>(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const [paymentAmount, setPaymentAmount] = useState<number>(100);
 
   // Payment proof state
   const [paymentFile, setPaymentFile] = useState<File | null>(null);
@@ -300,6 +302,8 @@ export default function RegistrationForm({ slug }: RegistrationFormProps) {
 
       const assignedId = result.registrationId || result.reference_id || newRefId;
       setReferenceId(assignedId);
+      if (result.qrDataUrl) setQrDataUrl(result.qrDataUrl);
+      if (result.amount) setPaymentAmount(result.amount);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setStep('payment');
       showToast('Form submitted! Now complete your compulsory payment screenshot upload.');
@@ -650,13 +654,14 @@ export default function RegistrationForm({ slug }: RegistrationFormProps) {
                 {/* QR Code Card */}
                 <div className="p-6 bg-[#EAE3D2] dark:bg-[#221D17] border border-[#2B261F] dark:border-[#4A4338] rounded-2xl text-center space-y-4 max-w-sm mx-auto">
                   <img
-                    src="/qr.jpg"
-                    alt="Payment QR Code"
-                    className="w-48 h-48 mx-auto rounded-xl border border-[#2B261F] dark:border-[#4A4338] object-cover bg-white p-2"
+                    src={qrDataUrl || '/qr.jpg'}
+                    alt="Payment QR Code — Scan to pay via UPI"
+                    className="w-48 h-48 mx-auto rounded-xl border border-[#2B261F] dark:border-[#4A4338] object-contain bg-white p-2"
                   />
                   <div className="space-y-1 text-xs font-semibold text-[#1A1814] dark:text-[#F6F2EA]">
-                    <p className="font-mono text-sm tracking-wide">UPI ID: YOUR_UPI_ID_HERE</p>
-                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Amount: Rs. YOUR_AMOUNT_HERE</p>
+                    <p className="text-lg font-bold font-serif text-[#1A1814] dark:text-[#F6F2EA]">ISTE Novatos</p>
+                    <p className="font-mono text-sm tracking-wide">UPI ID: istembcet@upi</p>
+                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Amount: ₹{paymentAmount}</p>
                   </div>
                 </div>
 
@@ -719,6 +724,7 @@ export default function RegistrationForm({ slug }: RegistrationFormProps) {
                 onClick={() => {
                   setStep('form');
                   setReferenceId('');
+                  setQrDataUrl('');
                   setPaymentFile(null);
                   setPaymentSuccessMsg(null);
                   setFormData({
